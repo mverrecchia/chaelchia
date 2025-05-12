@@ -1,0 +1,80 @@
+{
+  "frame": {
+    "model": {
+      "path": "/models/flipframe.glb",
+      "position": { "x": 0.052, "y": 2.33, "z": -3.83 },
+      "rotation": { "x": 0, "y": 180, "z": 90 },
+      "scale": 2.45
+    },
+    "materials": [
+      {
+        "name": "Flip_Disc_Display_colored_full_with_screen_both_no_cuou_8f20eeb",
+        "colorOverride": "#C5FFFA",
+        "metalness": 0.1,
+        "roughness": 0.5,
+        "flatShading": true,
+        "needsUpdate": true
+      },
+      {
+        "name": "Flip_Disc_Display_colored_full_with_screen_both_no_cuou_06679a5",
+        "emissive": "#FF7100",
+        "emissiveIntensity": 1.0
+      },
+      {
+        "name": "Flip_Disc_Display_colored_full_with_screen_both_no_cuou_17c7718",
+        "emissive": "#FF0000",
+        "emissiveIntensity": 1.0
+      },
+      {
+        "name": "Flip_Disc_Display_colored_full_with_screen_both_no_cuou_8b83ea0",
+        "colorOverride": "#FFCDF2",
+        "metalness": 0.2,
+        "roughness": 0.8,
+        "flatShading": false,
+        "needsUpdate": true
+      },
+      {
+        "name": "Flip_Disc_Display_colored_full_with_screen_both_no_cuou_68961f9",
+        "colorOverride": "#CFFFB7",
+        "metalness": 0.2,
+        "roughness": 0.8,
+        "flatShading": false,
+        "needsUpdate": true
+      },
+      {
+        "name": "Flip_Disc_Display_colored_full_with_screen_both_no_cuou_dd398c6",
+        "colorOverride": "#FFFF00",
+        "metalness": 0.2,
+        "roughness": 0.8,
+        "flatShading": false,
+        "needsUpdate": true
+      }
+    ]
+  },
+  "disc": {
+    "model": {
+      "path": "/models/flipdisc.glb",
+      "position": { "x": -0.2075, "y": 2.8475, "z": -3.75 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "scale": 2.225
+    },
+    "materials": [
+      {
+        "name": "flipdiscMaterial0",
+        "metalness": 0.0,
+        "roughness": 0.8,
+        "flatShading": true,
+        "needsUpdate": true
+      },
+      {
+        "name": "flipdiscMaterial1",
+        "metalness": 0.2,
+        "roughness": 0.8,
+        "flatShading": true,
+        "needsUpdate": true
+      }
+    ]
+  }
+}
+  
+  

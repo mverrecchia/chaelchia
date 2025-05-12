@@ -1,0 +1,28 @@
+{
+  "knob": {
+    "model": {
+      "path": "/models/smartknob.glb",
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "scale": 1.0
+    },
+    "materials": [
+    {
+      "name": "smartknob_full_reducedMaterial0.001",
+      "colorOverride": "#FFFFFD",
+      "metalness": 0.1,
+      "roughness": 0.2,
+      "flatShading": false,
+      "needsUpdate": true
+    }]
+  },
+  "mount": {
+    "model": {
+      "path": "/models/discoball_mount.glb",
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "scale": 1.0
+    },
+    "materials": []
+  }
+}

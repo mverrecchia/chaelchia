@@ -1,0 +1,176 @@
+[
+  {
+    "controllerId": 0,
+    "supplies": [
+      {
+        "id": 0,
+        "type": "rotating",
+        "model": {
+          "path": "/models/controller_0_rotating.glb",
+          "position": { "x": -3.825, "y": 3.6, "z": -0.725 },
+          "rotation": { "x": 0, "y": 270, "z": 0 },
+          "scale": 2.2
+        },
+        "canRotate": true,
+        "materials": [
+          {
+            "name": "flower_0Material1",
+            "colorOverride": "#E7AA00",
+            "isEmissive": true,
+            "metalness": 0.5,
+            "roughness": 0.2,
+            "flatShading": true,
+            "needsUpdate": true
+          },
+          {
+            "name": "flower_0Material2",
+            "colorOverride": "#FFFF00",
+            "isEmissive": true,
+            "metalness": 0.5,
+            "roughness": 0.2,
+            "flatShading": true,
+            "needsUpdate": true
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "type": "stationary",
+        "model": {
+          "path": "/models/controller_0_stationary.glb",
+          "position": { "x": -3.825, "y": 3.0, "z": -0.65 },
+          "rotation": { "x": 0, "y": 270, "z": 0 },
+          "scale": 2.2
+        },
+        "canRotate": false,
+        "materials": [
+          {
+            "name": "flower_0_stemMaterial1",
+            "colorOverride": "#22DF3E",
+            "isEmissive": true,
+            "metalness": 0.5,
+            "roughness": 0.2,
+            "flatShading": true,
+            "needsUpdate": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "controllerId": 1,
+    "supplies": [
+      {
+        "id": 0,
+        "type": "rotating",
+        "model": {
+          "path": "/models/controller_1_rotating.glb",
+          "position": { "x": -3.75, "y": 3.15, "z": -0.075 },
+          "rotation": { "x": 0, "y": 270, "z": 0 },
+          "scale": 2.2
+        },
+        "canRotate": true,
+        "materials": [
+          {
+            "name": "flower_1Material2",
+            "colorOverride": "#00DADA",
+            "isEmissive": true,
+            "metalness": 0.5,
+            "roughness": 0.2,
+            "flatShading": true,
+            "needsUpdate": true
+          },
+          {
+            "name": "flower_1Material1",
+            "colorOverride": "#D800DA",
+            "isEmissive": true,
+            "metalness": 0.5,
+            "roughness": 0.2,
+            "flatShading": true,
+            "needsUpdate": true
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "type": "stationary",
+        "model": {
+          "path": "/models/controller_1_stationary.glb",
+          "position": { "x": -3.75, "y": 2.7, "z": -0.05 },
+          "rotation": { "x": 0, "y": 270, "z": 0 },
+          "scale": 2.2
+        },
+        "canRotate": false,
+        "materials": [
+          {
+            "name": "flower_1_stemMaterial1",
+            "colorOverride": "#22DF3E",
+            "isEmissive": true,
+            "metalness": 0.5,
+            "roughness": 0.2,
+            "flatShading": true,
+            "needsUpdate": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "controllerId": 2,
+    "supplies": [
+      {
+        "id": 0,
+        "type": "rotating",
+        "model": {
+          "path": "/models/controller_2_rotating.glb",
+          "position": { "x": -3.83, "y": 4.075, "z": -0.075 },
+          "rotation": { "x": 0, "y": 270, "z": 0 },
+          "scale": 2.2
+        },
+        "canRotate": true,
+        "materials": [
+          {
+            "name": "flower_2Material2",
+            "colorOverride": "#B47FDA",
+            "isEmissive": true,
+            "metalness": 0.5,
+            "roughness": 0.2,
+            "flatShading": true,
+            "needsUpdate": true
+          },
+          {
+            "name": "flower_2Material1",
+            "colorOverride": "#FFFFFF",
+            "isEmissive": true,
+            "metalness": 0.5,
+            "roughness": 0.2,
+            "flatShading": true,
+            "needsUpdate": true
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "type": "stationary",
+        "model": {
+          "path": "/models/controller_2_stationary.glb",
+          "position": { "x": -3.75, "y": 3.1, "z": -0.15 },
+          "rotation": { "x": 0, "y": 270, "z": 0 },
+          "scale": 2.2
+        },
+        "canRotate": false,
+        "materials": [
+          {
+            "name": "flower_2_stemMaterial1",
+            "colorOverride": "#22DF3E",
+            "isEmissive": true,
+            "metalness": 0.5,
+            "roughness": 0.2,
+            "flatShading": true,
+            "needsUpdate": true
+          }
+        ]
+      }
+    ]
+  }
+]
