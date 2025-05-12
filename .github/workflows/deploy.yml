@@ -1,0 +1,78 @@
+name: Build + Deploy Portfolio
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          
+      - name: Build frontend
+        env:
+          REACT_APP_MQTT_WS_BROKER: ${{ secrets.REACT_APP_MQTT_WS_BROKER }}
+          REACT_APP_MQTT_USERNAME: ${{ secrets.REACT_APP_MQTT_USERNAME }}
+          REACT_APP_MQTT_PASSWORD: ${{ secrets.REACT_APP_MQTT_PASSWORD }}
+          REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
+        run: |
+          cd frontend
+          npm install
+
+          # Create .env for build using environment variables
+          cat > .env << EOL
+          REACT_APP_MQTT_WS_BROKER=${REACT_APP_MQTT_WS_BROKER}
+          REACT_APP_MQTT_USERNAME=${REACT_APP_MQTT_USERNAME}
+          REACT_APP_MQTT_PASSWORD=${REACT_APP_MQTT_PASSWORD}
+          REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL}
+          EOL
+          
+          CI=false npm run build
+
+      - name: Copy frontend build to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.LINODE_HOST }}
+          username: ${{ secrets.LINODE_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "frontend/build/"
+          target: "/var/www/chaelchia/frontend"
+          strip_components: 2
+          
+      - name: Deploy backend
+        uses: appleboy/ssh-action@master
+        env:
+          REACT_APP_BACKEND_PORT: ${{ secrets.REACT_APP_BACKEND_PORT }}
+          REACT_APP_MONGO_URI: ${{ secrets.REACT_APP_MONGO_URI }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+        with:
+          host: ${{ secrets.LINODE_HOST }}
+          username: ${{ secrets.LINODE_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: REACT_APP_BACKEND_PORT,REACT_APP_MONGO_URI,SESSION_SECRET
+          script: |
+            cd /var/www/chaelchia
+            git pull origin main
+            
+            cat > /var/www/chaelchia/backend/.env << EOL
+            REACT_APP_BACKEND_PORT=${REACT_APP_BACKEND_PORT}
+            REACT_APP_MONGO_URI=${REACT_APP_MONGO_URI}
+            SESSION_SECRET=${SESSION_SECRET}
+            NODE_ENV=production
+            EOL
+            
+            cd /var/www/chaelchia/backend
+            npm install
+            
+            # stop all processes using port 8080
+            fuser -k 8080/tcp || true
+            
+            pm2 restart backend || pm2 start --name "backend" npm -- start

@@ -1,0 +1,16 @@
+# /portfolio/.gitignore
+# Environment variables
+*/.env
+ecosystem.config.js
+
+# Node.js
+node_modules/
+
+# Build files
+*/dist/
+*/build/
+
+# Other common ignores
+.DS_Store
+*.log
+*.bak
