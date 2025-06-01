@@ -17,9 +17,9 @@ The frontend is comprised of a few central building blocks:
   both visual display and user interaction feedback. Contained within the visualizaiton component is an associated Manager that handles the inputs from the UI, more or less acting as a JS mirror to the python/C++ running on the hardware.
   - **SceneManager**: Provides a shared 3D environment where all project visualizations exist. It handles camera movement, lighting, raycasting for interactions, and post-processing effects.
   - **Panels**: Project-specific panels are the entrances to the user's interaction with the project. These panels vary based on the project's feature sets.
-  - **MQTT Client**: Allows for bidirectional messaging between the web interface and physical hardware. It manages connection state, device locks, and message publishing/subscription.
+  - **Socket.io Client**: Used for handling MQTT messages forwarded by the backend, and for sending MQTT messages to the backend. Also manages the device locks.
 
-The backend is a lightweight Node.js/Express server that provides endpoints for managing device settings within user "profiles", acting as the bridge between the frontend and the MongoDB documents that store these profiles.
+The backend is a lightweight Node.js/Express server that provides endpoints for managing device settings within user "profiles", acting as the bridge between the frontend and the MongoDB documents that store these profiles. It also handles the MQTT connection via a Socket.io server, which forwards messages between the frontend and the MQTT broker.
 
 For now, the website is best viewed on the Safari desktop browser. Chrome and Firefox also work but show some yet-to-be-chased-down discrepancies.
 

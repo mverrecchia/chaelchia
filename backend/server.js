@@ -7,7 +7,9 @@ const cors = require('cors');
 const http = require('http');
 const bodyParser = require('body-parser');
 const apiRoutes = require('./routes');
-async function createServer() {  
+const { Server } = require('socket.io');
+const mqtt = require('mqtt');
+async function createServer() {
   const app = express();
 
   app.use(cors({
@@ -68,7 +70,52 @@ async function createServer() {
       console.log('MongoDB connection closed');
     });
   });
-  
+
+  const io = new Server(server, {
+    cors: {
+      origin: [
+        'http://localhost:3000',
+        'http://chaelchia.com',
+        'http://www.chaelchia.com',
+        'https://chaelchia.com',
+        'https://www.chaelchia.com'
+      ],
+      credentials: true
+    },
+    allowEIO3: true,
+    transports: ['websocket', 'polling']
+  });
+
+  const mqttClient = mqtt.connect(process.env.MQTT_BROKER, {
+    username: process.env.MQTT_USERNAME,
+    password: process.env.MQTT_PASSWORD
+  });
+
+  // forward mqtt messages to frontend
+  mqttClient.on('message', (topic, message) => {
+    io.emit('mqtt-message', { topic, message: message.toString() });
+  });
+
+  mqttClient.on('connect', () => {
+    console.log('Connected to MQTT broker');
+    mqttClient.subscribe('wallflower/manager/status');
+    mqttClient.subscribe('stool/manager/status');
+    mqttClient.subscribe('flip/manager/status');
+    mqttClient.subscribe('smartknob/manager/status');
+    mqttClient.subscribe('wallflower/lock/response');
+    mqttClient.subscribe('stool/lock/response');
+    mqttClient.subscribe('flip/lock/response');
+    mqttClient.subscribe('smartknob/lock/response');
+  });
+
+  io.on('connection', (socket) => {
+    console.log('Frontend connected');
+
+    socket.on('publish-mqtt', (data) => {
+      mqttClient.publish(data.topic, data.message);
+    });
+  });
+
   return server;
 }
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import mqtt from "mqtt/dist/mqtt";
+import io from 'socket.io-client';
 import { getClientIdFromDatabase, saveClientIdToDatabase } from '../services/api';
 
 const MQTTContext = createContext();
@@ -22,7 +22,7 @@ const discoKnobLockResponseTopic = 'smartknob/lock/response';
 
 export const MQTTProvider = ({ children }) => {
   const [clientId, setClientId] = useState(`web_temp_${Math.random().toString(16).slice(2, 10)}`);
-  const [client, setClient] = useState(null);
+  const [socket, setSocket] = useState(null);
   const [mqttConnected, setMqttConnected] = useState(false);
   const [stoolManagerState, setStoolManagerState] = useState({ status: 'offline' });
   const [wallflowerManagerState, setWallflowerManagerState] = useState({ status: 'offline' });
@@ -67,35 +67,24 @@ export const MQTTProvider = ({ children }) => {
       return;
     }
 
-    const mqttClient = mqtt.connect(process.env.REACT_APP_MQTT_WS_BROKER, {
-      clientId: clientId,
-      clean: true,
-      connectTimeout: 30000,
-      reconnectPeriod: 2000,
-      keepalive: 60,
-      resubscribe: true,
-      username: process.env.REACT_APP_MQTT_USERNAME,
-      password: process.env.REACT_APP_MQTT_PASSWORD,
+    const baseUrl = process.env.REACT_APP_API_BASE_URL.replace('/api', '');
+    const socketConnection = io(baseUrl, {
+      withCredentials: true,
+      transports: ['websocket', 'polling'],
+      secure: window.location.protocol === 'https:',
+      rejectUnauthorized: false
     });
 
-    mqttClient.on('connect', () => {
+    socketConnection.on('connect', () => {
       setMqttConnected(true);
       setConnectionError(null);
-      
-      mqttClient.subscribe(wallFlowerTopic);
-      mqttClient.subscribe(wallFlowerLockResponseTopic);
-      mqttClient.subscribe(stoolTopic);
-      mqttClient.subscribe(stoolLockResponseTopic);
-      mqttClient.subscribe(flipFrameTopic);
-      mqttClient.subscribe(flipFrameLockResponseTopic);
-      mqttClient.subscribe(discoKnobTopic);
-      mqttClient.subscribe(discoKnobLockResponseTopic);
+      console.log('Connected to backend via Socket.io');
     });
 
-    mqttClient.on('message', (topic, message) => {
+    socketConnection.on('mqtt-message', (data) => {
       try {
-        const messageStr = message.toString();
-        const payload = JSON.parse(messageStr);
+        const { topic, message } = data;
+        const payload = JSON.parse(message);
         
         const timestamp = Date.now();
         setLastMessages(prev => {
@@ -212,42 +201,33 @@ export const MQTTProvider = ({ children }) => {
       }
     };
 
-    mqttClient.on('error', (err) => {
-      console.error('MQTT connection error:', err);
+    socketConnection.on('connect_error', (err) => {
+      console.error('Socket.io connection error:', err);
       setConnectionError(`Connection error: ${err.message}`);
     });
 
-    mqttClient.on('close', () => {
-      console.log('MQTT connection closed');
+    socketConnection.on('disconnect', () => {
+      console.log('Socket.io connection closed');
       setMqttConnected(false);
-      
-      if (!reconnectTimeoutRef.current) {
-        reconnectTimeoutRef.current = setTimeout(() => {
-          reconnectTimeoutRef.current = null;
-          console.log("Attempting to reconnect to MQTT...");
-          
-          setClient(null);
-        }, 5000);
-      }
     });
 
-    mqttClient.on('reconnect', () => {
-      console.log('MQTT: Reconnecting to broker');
+    socketConnection.on('reconnect', () => {
+      console.log('Socket.io: Reconnecting to backend');
     });
 
-    setClient(mqttClient);
+    setSocket(socketConnection);
     
     const setupHeartbeat = (deviceType) => {
       clearHeartbeat(deviceType);
 
-      if (!mqttClient || !mqttClient.connected) {
-        console.warn(`Cannot setup heartbeat for ${deviceType} - MQTT client not connected`);
+      if (!socketConnection || !socketConnection.connected) {
+        console.warn(`Cannot setup heartbeat for ${deviceType} - Socket.io not connected`);
         return;
       }
 
       const interval = setInterval(() => {
-        if (mqttClient && mqttClient.connected) {
-          sendHeartbeat(deviceType, mqttClient);
+        if (socketConnection && socketConnection.connected) {
+          sendHeartbeat(deviceType, socketConnection);
         }
       }, 30000);
 
@@ -262,11 +242,11 @@ export const MQTTProvider = ({ children }) => {
       }
     };
 
-    const sendHeartbeat = (deviceType, clientInstance) => {
-      const activeClient = clientInstance || client;
+    const sendHeartbeat = (deviceType, socketInstance) => {
+      const activeSocket = socketInstance || socket;
 
-      if (!activeClient || !activeClient.connected) {
-        console.warn(`Cannot send heartbeat for ${deviceType} - MQTT client not connected`);
+      if (!activeSocket || !activeSocket.connected) {
+        console.warn(`Cannot send heartbeat for ${deviceType} - Socket.io not connected`);
         return;
       }
 
@@ -283,7 +263,7 @@ export const MQTTProvider = ({ children }) => {
       };
 
       try {
-        activeClient.publish(topic, JSON.stringify(payload));
+        activeSocket.emit('publish-mqtt', { topic, message: JSON.stringify(payload) });
         console.log(`Sent heartbeat for ${deviceType}`);
       } catch (error) {
         console.error(`Error sending heartbeat for ${deviceType}:`, error);
@@ -309,15 +289,15 @@ export const MQTTProvider = ({ children }) => {
       
       Object.keys(heartbeatIntervals.current).forEach(clearHeartbeat);
       
-      if (client) {
-        client.end();
+      if (socketConnection) {
+        socketConnection.disconnect();
       }
     };
   }, [clientId]);
 
   const requestDeviceLock = useCallback((deviceType) => {
-    // return early if we don't have a valid MQTT client
-    if (!client || !mqttConnected) return false;
+    // return early if we don't have a valid Socket.io connection
+    if (!socket || !mqttConnected) return false;
     
     const topic = getDeviceLockTopic(deviceType);
     // return early if we don't have a valid lock topic
@@ -329,13 +309,13 @@ export const MQTTProvider = ({ children }) => {
       timestamp: Date.now()
     };
     
-    client.publish(topic, JSON.stringify(payload));
+    socket.emit('publish-mqtt', { topic, message: JSON.stringify(payload) });
     return true;
-  }, [client, mqttConnected, clientId]);
+  }, [socket, mqttConnected, clientId]);
   
   const releaseDeviceLock = useCallback((deviceType) => {
-    // return early if we don't have a valid MQTT client
-    if (!client || !mqttConnected) return false;
+    // return early if we don't have a valid Socket.io connection
+    if (!socket || !mqttConnected) return false;
     
     const topic = getDeviceLockTopic(deviceType);
     // return early if we don't have a valid lock topic
@@ -356,7 +336,7 @@ export const MQTTProvider = ({ children }) => {
     };
     const jsonPayload = JSON.stringify(payload);
     
-    client.publish(topic, jsonPayload);
+    socket.emit('publish-mqtt', { topic, message: jsonPayload });
     
     if (heartbeatIntervals.current[deviceType]) {
       clearInterval(heartbeatIntervals.current[deviceType]);
@@ -364,7 +344,7 @@ export const MQTTProvider = ({ children }) => {
     }
     
     return true;
-  }, [client, mqttConnected, clientId, deviceLocks]);
+  }, [socket, mqttConnected, clientId, deviceLocks]);
   
   const getDeviceLockTopic = useCallback((deviceType) => {
     switch(deviceType) {
@@ -377,7 +357,7 @@ export const MQTTProvider = ({ children }) => {
   }, []);
   
   const publish = useCallback((topic, message) => {
-    if (!client || !mqttConnected) {
+    if (!socket || !mqttConnected) {
       return false;
     }
     
@@ -407,15 +387,15 @@ export const MQTTProvider = ({ children }) => {
       ? JSON.stringify(messageWithClientId) 
       : messageWithClientId;
     
-    client.publish(topic, payload, { qos: 0, retain: false });
+    socket.emit('publish-mqtt', { topic, message: payload });
     return true;
-  }, [client, mqttConnected, clientId, deviceLocks]);
+  }, [socket, mqttConnected, clientId, deviceLocks]);
   
   // check if we have a valid persistent client ID
   const hasValidClientId = !clientId.startsWith('web_temp_');
 
   const value = {
-    client,
+    socket,
     mqttConnected,
     connectionError,
     stoolManagerState,

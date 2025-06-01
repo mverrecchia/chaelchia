@@ -1,7 +1,6 @@
 require('dotenv').config();
 const { createServer } = require('./server');
 
-// Start the server
 async function start() {
   try {
     console.log("Backend is starting...");
@@ -13,7 +12,6 @@ async function start() {
       console.log(`Server running on port ${PORT}`);
     });
     
-    // Handle graceful shutdown
     process.on('SIGTERM', () => {
       console.log('SIGTERM received, shutting down gracefully');
       server.close(() => {
