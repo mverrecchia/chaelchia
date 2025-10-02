@@ -163,6 +163,7 @@ const WallflowerConfig = mongoose.model('WallflowerConfig', ControllerConfigSche
 const FlipDiscConfig = mongoose.model('FlipDiscConfig', FlipDiscConfigSchema);
 const DiscoKnobConfig = mongoose.model('DiscoKnobConfig', DiscoKnobConfigSchema);
 const PortfolioConfig = mongoose.model('PortfolioConfig', PortfolioConfigSchema);
+
 module.exports = {
   StoolConfig,
   WallflowerConfig,

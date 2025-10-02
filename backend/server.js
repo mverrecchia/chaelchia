@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 const apiRoutes = require('./routes');
 const { Server } = require('socket.io');
 const mqtt = require('mqtt');
+
 async function createServer() {
   const app = express();
 
@@ -32,8 +33,20 @@ async function createServer() {
 
   app.use(bodyParser.json());
   
-  // Trust the reverse proxy (important for cookies when behind HTTPS proxy)
   app.set('trust proxy', 1);
+
+  app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false, 
+    saveUninitialized: true,
+    cookie: { 
+      maxAge: 20 * 60 * 1000,
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax'
+    },
+    proxy: true
+  }));
   
   try {
     await mongoose.connect(process.env.REACT_APP_MONGO_URI, {
@@ -45,20 +58,6 @@ async function createServer() {
     console.error('MongoDB connection error:', err);
     throw err;
   }
-
-  const isProduction = process.env.NODE_ENV === 'production';
-  app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false, 
-    saveUninitialized: true,
-    cookie: { 
-      maxAge: 20 * 60 * 1000,
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'none' // Allow cross-site cookies
-    },
-    proxy: true // Trust the reverse proxy
-  }));
 
   app.use('/api', apiRoutes());
 
